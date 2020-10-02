@@ -1,0 +1,59 @@
+#!/bin/bash
+function declareConstants() {
+    $1 TARGET_DIRECTORY "__DOWNLOADS_DIR__"
+}
+
+function printHelp() {
+    cat << EOF
+
+    Convert videos to GIF
+EOF
+}
+
+function loadOptions() {
+    getOpt "--autocomplete" autocomplete
+    if $autocomplete; then
+        unusedBehaviour="IGNORE"
+    fi
+    getOpt "--scale" scale 1 "480"
+    getOpt "--fps" fps 1 "10"
+    getOpt "--start" start 1
+    getOpt "--duration" duration 1
+    getOpt "-i" input 1
+}
+
+function autocomplete() {
+    if [ "$#" -eq 0 ]; then
+        echo "-i"
+    elif [ "$#" -eq 1 ] && [ "$1" == "-i" ]; then
+        ls
+    else
+        echo "--scale --fps --start --duration `ls`"
+    fi
+}
+
+function run () {
+    if $autocomplete; then
+        autocomplete "$@"
+        return 0
+    fi
+
+    if [ -z "$input" ]; then
+        error "Please specify an input"
+    fi
+    getArg output "$@"
+
+    opts=""
+    if [ -n "$start" ]; then
+        opts="${opts} -ss $start"
+    fi
+    if [ -n "$duration" ]; then
+        opts="${opts} -t $duration"
+    fi
+
+    cmd="ffmpeg ${opts} -i \"${input}\" -vf \"fps=${fps},scale=${scale}:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse\" -loop 0 \"${output}\""
+    echo "> $cmd"
+    eval $cmd
+}
+
+source "__STARTER__@v2"

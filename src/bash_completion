@@ -1,0 +1,17 @@
+__gifify()
+{
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    case "$prev" in
+        "gifify" )
+            COMPREPLY=( $(compgen -W "`gifify --autocomplete`" -- ${cur}) )
+            ;;
+        * )
+            COMPREPLY=( $(compgen -W "`gifify --autocomplete "${COMP_WORDS[@]}"`" -- ${cur}) )
+            ;;
+    esac
+}
+
+complete -F __gifify gifify
